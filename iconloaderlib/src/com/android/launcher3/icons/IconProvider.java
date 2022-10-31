@@ -123,32 +123,30 @@ public class IconProvider {
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     private Drawable getIconWithOverrides(String packageName, int iconDpi,
             Supplier<Drawable> fallback) {
-        ThemeData td = getThemeDataForPackage(packageName);
-
         Drawable icon = null;
         try {
             icon = getFromIconPack(packageName);
-            if (icon != null) {
-                return icon;
-            }
         } catch (Exception e) { }
 
+        ThemeData td = getThemeDataForPackage(packageName);
         if (mCalendar != null && mCalendar.getPackageName().equals(packageName)) {
             icon = loadCalendarDrawable(iconDpi, td);
+            return icon;
         } else if (mClock != null && mClock.getPackageName().equals(packageName)) {
             icon = ClockDrawableWrapper.forPackage(mContext, mClock.getPackageName(), iconDpi, td);
+            return icon;
         }
         if (icon == null) {
             icon = fallback.get();
-            if (icon instanceof AdaptiveIconDrawable && td != null) {
-                AdaptiveIconDrawable aid = (AdaptiveIconDrawable) icon;
-                if  (aid.getMonochrome() == null) {
-                    icon = new AdaptiveIconDrawable(aid.getBackground(),
-                            aid.getForeground(), td.loadPaddedDrawable());
-                }
-            } else if (icon instanceof BitmapDrawable && td != null) {
-                icon = td.loadMonochromeDrawable(mContext);
+        }
+        if (icon instanceof AdaptiveIconDrawable && td != null) {
+            AdaptiveIconDrawable aid = (AdaptiveIconDrawable) icon;
+            if  (aid.getMonochrome() == null) {
+                icon = new AdaptiveIconDrawable(aid.getBackground(),
+                        aid.getForeground(), td.loadPaddedDrawable());
             }
+        } else if (icon instanceof BitmapDrawable && td != null) {
+            icon = td.loadMonochromeDrawable(mContext);
         }
         return icon;
     }

@@ -26,6 +26,8 @@ import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.drawable.AdaptiveIconDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.Paint;
@@ -130,6 +132,20 @@ public class ThemedIconDrawable extends FastBitmapDrawable {
         public ThemeData(Resources resources, int resID) {
             mResources = resources;
             mResID = resID;
+        }
+
+        Drawable loadMonochromeDrawable(Context context) {
+            if (!"drawable".equals(mResources.getResourceTypeName(mResID))) {
+                return null;
+            }
+            int[] colors = getColors(context);
+            Drawable bg = new ColorDrawable(colors[0]);
+            float inset = getExtraInsetFraction() / (1 + 2 * getExtraInsetFraction());
+            Drawable d = mResources.getDrawable(mResID).mutate();
+            d.setTint(getColors(context)[1]);
+            d = new InsetDrawable(d, .2f);
+            Drawable fg = new InsetDrawable(d, inset);
+            return new AdaptiveIconDrawable(bg, fg);
         }
 
         Drawable loadPaddedDrawable() {

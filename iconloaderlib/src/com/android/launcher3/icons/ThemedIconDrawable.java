@@ -17,6 +17,7 @@ package com.android.launcher3.icons;
 
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
+import static android.graphics.drawable.AdaptiveIconDrawable.getExtraInsetFraction;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -25,6 +26,8 @@ import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
@@ -117,6 +120,28 @@ public class ThemedIconDrawable extends FastBitmapDrawable {
     public static FastBitmapDrawable newDrawable(BitmapInfo info, Context context) {
         int[] colors = getColors(context);
         return new ThemedConstantState(info, colors[0], colors[1]).newDrawable();
+    }
+
+    public static class ThemeData {
+
+        final Resources mResources;
+        final int mResID;
+
+        public ThemeData(Resources resources, int resID) {
+            mResources = resources;
+            mResID = resID;
+        }
+
+        Drawable loadPaddedDrawable() {
+            if (!"drawable".equals(mResources.getResourceTypeName(mResID))) {
+                return null;
+            }
+            Drawable d = mResources.getDrawable(mResID).mutate();
+            d = new InsetDrawable(d, .2f);
+            float inset = getExtraInsetFraction() / (1 + 2 * getExtraInsetFraction());
+            Drawable fg = new InsetDrawable(d, inset);
+            return fg;
+        }
     }
 
     /**

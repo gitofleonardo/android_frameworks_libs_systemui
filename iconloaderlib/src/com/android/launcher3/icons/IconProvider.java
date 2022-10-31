@@ -20,7 +20,6 @@ import static android.content.Intent.ACTION_DATE_CHANGED;
 import static android.content.Intent.ACTION_TIMEZONE_CHANGED;
 import static android.content.Intent.ACTION_TIME_CHANGED;
 import static android.content.res.Resources.ID_NULL;
-import static android.graphics.drawable.AdaptiveIconDrawable.getExtraInsetFraction;
 
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -36,7 +35,6 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +48,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.os.BuildCompat;
 
+import com.android.launcher3.icons.ThemedIconDrawable.ThemeData;
 import com.android.launcher3.lineage.icon.IconPack;
 import com.android.launcher3.lineage.icon.providers.IconPackProvider;
 
@@ -265,28 +264,6 @@ public class IconProvider {
      */
     public SafeCloseable registerIconChangeListener(IconChangeListener listener, Handler handler) {
         return new IconChangeReceiver(listener, handler);
-    }
-
-    public static class ThemeData {
-
-        final Resources mResources;
-        final int mResID;
-
-        public ThemeData(Resources resources, int resID) {
-            mResources = resources;
-            mResID = resID;
-        }
-
-        Drawable loadPaddedDrawable() {
-            if (!"drawable".equals(mResources.getResourceTypeName(mResID))) {
-                return null;
-            }
-            Drawable d = mResources.getDrawable(mResID).mutate();
-            d = new InsetDrawable(d, .2f);
-            float inset = getExtraInsetFraction() / (1 + 2 * getExtraInsetFraction());
-            Drawable fg = new InsetDrawable(d, inset);
-            return fg;
-        }
     }
 
     private class IconChangeReceiver extends BroadcastReceiver implements SafeCloseable {

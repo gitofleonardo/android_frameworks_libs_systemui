@@ -43,7 +43,7 @@ import android.util.TypedValue;
 
 import androidx.annotation.Nullable;
 
-import com.android.launcher3.icons.IconProvider.ThemeData;
+import com.android.launcher3.icons.ThemedIconDrawable.ThemeData;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;

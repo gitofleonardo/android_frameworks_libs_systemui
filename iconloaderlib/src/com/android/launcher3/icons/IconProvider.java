@@ -35,6 +35,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -146,7 +147,10 @@ public class IconProvider {
                         aid.getForeground(), td.loadPaddedDrawable());
             }
         } else if (icon instanceof BitmapDrawable && td != null) {
-            icon = td.loadMonochromeDrawable(mContext);
+            int[] colors = td.getThemedColors(mContext);
+            Drawable bg = new ColorDrawable(colors[0]);
+            Drawable fg = new ColorDrawable(colors[1]);
+            icon = new AdaptiveIconDrawable(bg, fg, td.loadPaddedDrawable());
         }
         return icon;
     }

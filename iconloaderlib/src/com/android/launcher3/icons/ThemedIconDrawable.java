@@ -158,6 +158,10 @@ public class ThemedIconDrawable extends FastBitmapDrawable {
             Drawable fg = new InsetDrawable(d, inset);
             return fg;
         }
+
+        int[] getThemedColors(Context context) {
+            return getColors(context);
+        }
     }
 
     /**

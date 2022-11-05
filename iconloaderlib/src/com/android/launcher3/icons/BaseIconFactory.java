@@ -209,6 +209,9 @@ public class BaseIconFactory implements AutoCloseable {
                         createIconBitmap(paddedMono, scale[0], mIconBitmapSize, Config.ALPHA_8),
                         this);
             }
+        } else if (mMonoIconEnabled && IconProvider.ATLEAST_T
+                && icon instanceof BitmapDrawable) {
+            info.setMonoIcon(((BitmapDrawable)icon).getBitmap(), this);
         }
         info = info.withFlags(getBitmapFlagOp(options));
         return info;

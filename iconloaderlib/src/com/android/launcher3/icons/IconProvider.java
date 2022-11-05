@@ -35,6 +35,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AdaptiveIconDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
@@ -123,8 +125,6 @@ public class IconProvider {
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     private Drawable getIconWithOverrides(String packageName, int iconDpi,
             Supplier<Drawable> fallback) {
-        ThemeData td = getThemeDataForPackage(packageName);
-
         Drawable icon = null;
         try {
             icon = getFromIconPack(packageName);
@@ -133,6 +133,7 @@ public class IconProvider {
             }
         } catch (Exception e) { }
 
+        ThemeData td = getThemeDataForPackage(packageName);
         if (mCalendar != null && mCalendar.getPackageName().equals(packageName)) {
             icon = loadCalendarDrawable(iconDpi, td);
         } else if (mClock != null && mClock.getPackageName().equals(packageName)) {
@@ -146,6 +147,11 @@ public class IconProvider {
                     icon = new AdaptiveIconDrawable(aid.getBackground(),
                             aid.getForeground(), td.loadPaddedDrawable());
                 }
+            } else if (ATLEAST_T && icon instanceof BitmapDrawable && td != null) {
+                int[] colors = ThemedIconDrawable.getColors(mContext);
+                Drawable bg = new ColorDrawable(colors[0]);
+                Drawable fg = new ColorDrawable(colors[1]);
+                icon = new AdaptiveIconDrawable(bg, fg, td.loadPaddedDrawable());
             }
         }
         return icon;

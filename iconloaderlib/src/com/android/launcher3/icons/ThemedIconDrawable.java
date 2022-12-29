@@ -122,8 +122,7 @@ public class ThemedIconDrawable extends FastBitmapDrawable {
     /**
      * Get an int array representing background and foreground colors for themed icons
      */
-    public static int[] getColors(Context context) {
-        Resources res = context.getResources();
+    public static int[] getColors(Resources res) {
         int[] colors = new int[2];
         if ((res.getConfiguration().uiMode & UI_MODE_NIGHT_MASK) == UI_MODE_NIGHT_YES) {
             colors[0] = res.getColor(android.R.color.system_neutral1_800);
@@ -133,6 +132,10 @@ public class ThemedIconDrawable extends FastBitmapDrawable {
             colors[1] = res.getColor(android.R.color.system_neutral2_700);
         }
         return colors;
+    }
+
+    public static int[] getColors(Context context) {
+        return getColors(context.getResources());
     }
 
     @Override

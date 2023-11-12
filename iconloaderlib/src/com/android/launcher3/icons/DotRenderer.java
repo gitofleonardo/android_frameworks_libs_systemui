@@ -27,6 +27,7 @@ import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.ViewDebug;
 
@@ -51,6 +52,12 @@ public class DotRenderer {
     private final float[] mLeftDotPosition;
 
     private static final int MIN_DOT_SIZE = 1;
+
+    private static final String EXCEED_TEXT = "···";
+    private static final float NOTIFICATION_COUNT_TEXT_SIZE_RATIO = 0.7f;
+    private static final float ROUND_RECT_RATIO = 1.5f;
+    private static final RectF sTmpRect = new RectF();
+
     public DotRenderer(int iconSizePx, Path iconShapePath, int pathSize) {
         int size = Math.round(SIZE_PERCENTAGE * iconSizePx);
         if (size <= 0) {
@@ -105,6 +112,11 @@ public class DotRenderer {
             Log.e(TAG, "Invalid null argument(s) passed in call to draw.");
             return;
         }
+        if (params.notificationCount >= 0) {
+            drawTextDot(canvas, params);
+            return;
+        }
+
         canvas.save();
 
         Rect iconBounds = params.iconBounds;
@@ -130,6 +142,74 @@ public class DotRenderer {
         canvas.restore();
     }
 
+    public void drawTextDot(Canvas canvas, DrawParams params) {
+        if (params == null) {
+            Log.e(TAG, "Invalid null argument(s) passed in call to draw.");
+            return;
+        }
+        params.dotColor = Color.RED;
+        canvas.save();
+
+        Rect iconBounds = params.iconBounds;
+        float[] dotPosition = params.leftAlign ? getLeftDotPosition() : getRightDotPosition();
+        float dotCenterX = iconBounds.left + iconBounds.width() * dotPosition[0];
+        float dotCenterY = iconBounds.top + iconBounds.height() * dotPosition[1];
+
+        // Ensure dot fits entirely in canvas clip bounds.
+        Rect canvasBounds = canvas.getClipBounds();
+        float offsetX = params.leftAlign
+                ? Math.max(0, canvasBounds.left - (dotCenterX + mBitmapOffset))
+                : Math.min(0, canvasBounds.right - (dotCenterX - mBitmapOffset));
+        float offsetY = Math.max(0, canvasBounds.top - (dotCenterY + mBitmapOffset));
+
+        // We draw the dot relative to its center.
+        canvas.translate(dotCenterX + offsetX, dotCenterY + offsetY);
+        canvas.scale(params.scale, params.scale);
+
+        mCirclePaint.setColor(Color.BLACK);
+        canvas.drawBitmap(mBackgroundWithShadow, mBitmapOffset, mBitmapOffset, mCirclePaint);
+        mCirclePaint.setColor(params.dotColor);
+
+        int notificationCount = params.notificationCount;
+        boolean drawRoundRect = notificationCount >= 10;
+        String countText;
+        if (notificationCount >= 100) {
+            countText = EXCEED_TEXT;
+        } else {
+            countText = String.valueOf(notificationCount);
+        }
+        float radius = mCircleRadius;
+
+        if (drawRoundRect) {
+            float rectExtraSideWidth = radius * ROUND_RECT_RATIO - radius;
+            sTmpRect.set(-radius - rectExtraSideWidth, -radius, radius + rectExtraSideWidth, radius);
+            canvas.drawRoundRect(sTmpRect, radius, radius, mCirclePaint);
+        } else {
+            canvas.drawCircle(0, 0, mCircleRadius, mCirclePaint);
+        }
+
+        mCirclePaint.setColor(Color.WHITE);
+        if (notificationCount > 0) {
+            Paint textPaint = mCirclePaint;
+            textPaint.setTextSize(getTextSize());
+            textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+
+            Paint.FontMetrics fm = textPaint.getFontMetrics();
+            float fontHeight = fm.descent - fm.ascent;
+            float textOffsetY = fontHeight / 2 - fm.bottom;
+            float textOffsetX = textPaint.measureText(countText) / 2;
+
+            canvas.drawText(countText, -textOffsetX, textOffsetY, textPaint);
+        }
+
+        canvas.restore();
+    }
+
+
+    private float getTextSize() {
+        return mCircleRadius * 2 * NOTIFICATION_COUNT_TEXT_SIZE_RATIO;
+    }
+
     public static class DrawParams {
         /** The color (possibly based on the icon) to use for the dot. */
         @ViewDebug.ExportedProperty(category = "notification dot", formatToHexString = true)
@@ -146,5 +226,8 @@ public class DotRenderer {
         /** Whether the dot should align to the top left of the icon rather than the top right. */
         @ViewDebug.ExportedProperty(category = "notification dot")
         public boolean leftAlign;
+        /** Number of current notifications */
+        @ViewDebug.ExportedProperty(category = "notification dot")
+        public int notificationCount = -1;
     }
 }
